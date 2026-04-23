@@ -4,31 +4,38 @@ def insert_citizen(citizen):
     conn = get_connection()
     cur = conn.cursor()
 
-    query = """
-    INSERT INTO "Citoyens"
-    ("communeId","nom","postnom","prenom","dateNaissance","sexe",
-     "lieuNaissance","numeroUnique","password","email","createdAt")
-    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
-    RETURNING id
-    """
+    try:
+        query = """
+        INSERT INTO "Citoyens"
+        ("communeId","nom","postnom","prenom","dateNaissance","sexe",
+         "lieuNaissance","numeroUnique","password","email","createdAt","updatedAt")
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
+        RETURNING id
+        """
 
-    cur.execute(query, (
-        citizen["communeId"],
-        citizen["nom"],
-        citizen["postnom"],
-        citizen["prenom"],
-        citizen["dateNaissance"],
-        citizen["sexe"],
-        citizen["lieuNaissance"],
-        citizen["numeroUnique"],
-        citizen["password"],
-        citizen["email"]
-    ))
+        cur.execute(query, (
+            citizen["communeId"],
+            citizen["nom"],
+            citizen["postnom"],
+            citizen["prenom"],
+            citizen["dateNaissance"],
+            citizen["sexe"],
+            citizen["lieuNaissance"],
+            citizen["numeroUnique"],
+            citizen["password"],
+            citizen["email"]
+        ))
 
-    citizen_id = cur.fetchone()[0]
+        citizen_id = cur.fetchone()[0]
+        conn.commit()
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        return citizen_id
 
-    return citizen_id
+    except Exception as e:
+        conn.rollback()
+        print("❌ Error inserting citizen:", e)
+        raise e
+
+    finally:
+        cur.close()
+        conn.close()
