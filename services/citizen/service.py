@@ -9,6 +9,7 @@ def insert_citizen(citizen):
     ("communeId","nom","postnom","prenom","dateNaissance","sexe",
      "lieuNaissance","numeroUnique","password","email","createdAt","updatedAt")
     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
+    ON CONFLICT ("email") DO UPDATE SET email = EXCLUDED.email
     RETURNING id
     """
 
@@ -25,10 +26,10 @@ def insert_citizen(citizen):
         citizen["email"]
     ))
 
-    citizen_id = cur.fetchone()[0]
+    result = cur.fetchone()
 
     conn.commit()
     cur.close()
     conn.close()
 
-    return citizen_id
+    return result[0] if result else None
